@@ -1,10 +1,51 @@
 import { Fragment } from 'react';
 import { Dialog, DialogPanel, DialogTitle, Transition, TransitionChild } from '@headlessui/react';
-import { replace, useNavigate } from 'react-router-dom';
+import { replace, useNavigate, useParams } from 'react-router-dom';
+import type { TaskFormData, Task } from '@/types/index';
+import { useForm } from 'react-hook-form';
+import TaskForm from './TaskForm';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { updateTask } from '@/api/TaskAPI';
+import { toast } from 'react-toastify';
 
-export default function EditTaskModal() {
+type EditTaskModalProps = {
+    data: Task
+    taskId: string
+}
+
+export default function EditTaskModal({data, taskId}: EditTaskModalProps) {
 
     const navigate = useNavigate()
+
+    /** Obtener projectId */
+    const params = useParams()
+    const projectId = params.projectId!
+
+    const {register, handleSubmit, reset, formState: {errors}} = useForm<TaskFormData>({defaultValues: {
+        name: data.name,
+        description: data.description
+    }})
+
+    const queryClient = useQueryClient()
+
+    const {mutate} = useMutation({
+        mutationFn: updateTask,
+        onError: (error) => {
+            toast.error(error.message)
+        },
+        onSuccess: (data) => {
+            queryClient.invalidateQueries({queryKey: ['project', projectId]})
+            queryClient.invalidateQueries({queryKey: ["task", taskId]})
+            toast.success(data)
+            reset()
+            navigate(location.pathname, {replace:true})
+        }
+    })
+
+    const handleEditTask = (formData: TaskFormData) => {
+        const data = { projectId, taskId, formData }
+        mutate(data)
+    }
 
     return (
         <Transition appear show={true} as={Fragment}>
@@ -46,11 +87,14 @@ export default function EditTaskModal() {
 
                                 <form
                                     className="mt-10 space-y-3"
+                                    onSubmit={handleSubmit(handleEditTask)}
                                     noValidate
                                 >
-                    
+                                    <TaskForm 
+                                        register={register} 
+                                        errors={errors}
+                                    />
 
-                    
                                     <input
                                         type="submit"
                                         className=" bg-fuchsia-600 hover:bg-fuchsia-700 w-full p-3  text-white font-black  text-xl cursor-pointer"
