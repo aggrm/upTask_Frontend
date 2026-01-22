@@ -1,9 +1,11 @@
-import { Fragment, useEffect } from 'react';
-import { Dialog, DialogPanel, DialogTitle, Transition, TransitionChild } from '@headlessui/react';
-import { Navigate, useLocation, useNavigate, useParams } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import { getTaskById } from '@/api/TaskAPI';
+import { Fragment, useEffect, type ChangeEvent } from 'react';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import { Dialog, DialogPanel, DialogTitle, Transition, TransitionChild } from '@headlessui/react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { getTaskById, updateTaskStatus } from '@/api/TaskAPI';
+import type { TaskStatus } from '@/types/index';
+import { statusTraslation } from '@/locales/es';
 import { formatDate } from '@/utils/utils';
 
 
@@ -12,12 +14,13 @@ export default function TaskModalDetails() {
     const navigate = useNavigate()
 
     /** Obtener projectId */
-    const { projectId } = useParams<{ projectId: string }>()
+    const params = useParams()
+    const projectId = params.projectId!
 
     /** Leer query params */
     const location = useLocation()
     const queryParams = new URLSearchParams(location.search)
-    const taskId = queryParams.get('viewTask')
+    const taskId = queryParams.get('viewTask')!
 
     /** Mostrar modal solo si hay taskId */
     const show = !!taskId
@@ -29,6 +32,24 @@ export default function TaskModalDetails() {
         retry: false
     })
 
+    const queryClient = useQueryClient()
+    const { mutate } = useMutation({
+        mutationFn: updateTaskStatus,
+        onError: (error) => {
+            toast.error(error.message)
+        },
+        onSuccess: (data) => {
+            toast.success(data)
+            queryClient.invalidateQueries({queryKey: ['project', projectId]})
+            queryClient.invalidateQueries({queryKey: ['task', taskId]})
+        }
+    })
+
+    const handleChange = (e: ChangeEvent<HTMLSelectElement>) => {
+        const status = e.target.value as TaskStatus 
+        const data = { projectId, taskId, status}
+        mutate(data)
+    }
     /** Manejo de errores (EFECTOS FUERA DEL RENDER) */
     useEffect(() => {
         if (isError) {
@@ -76,7 +97,17 @@ export default function TaskModalDetails() {
 
                                     <p className='text-lg text-slate-500 mb-2'>Descripción: {data.description}</p>
                                     <div className='my-5 space-y-3'>
-                                        <label className='font-bold'>Estado Actual: {data.status}</label>
+                                        <label className='font-bold'>Estado Actual:</label>
+
+                                        <select 
+                                            className='w-full p-3 bg-white border border-gray-300'
+                                            defaultValue={data.status}
+                                            onChange={handleChange}
+                                        >
+                                            {Object.entries(statusTraslation).map(([key, value])=> (
+                                                <option key={key} value={key}>{value}</option>
+                                            ))}
+                                        </select>
                                     </div>
                                 </DialogPanel>
                             </TransitionChild>
