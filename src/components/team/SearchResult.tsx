@@ -15,7 +15,7 @@ export default function SearchResult({user, reset} : SearchResultProps) {
     const params = useParams()
     const projectId = params.projectId!
 
-     const queryClient = useQueryClient()
+    const queryClient = useQueryClient()
 
     const {mutate} = useMutation({
       mutationFn: addUserToProject,
