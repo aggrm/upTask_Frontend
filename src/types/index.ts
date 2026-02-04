@@ -51,7 +51,9 @@ export const projectSchema = z.object({
     _id: z.string(),
     projectName: z.string(),
     clientName: z.string(),
-    description: z.string()
+    description: z.string(),
+    manager: z.union([z.string(), userSchema.pick({ _id: true })
+])
 })
 
 export const dashBoardProjectSchema = z.array(
@@ -59,7 +61,8 @@ export const dashBoardProjectSchema = z.array(
         _id: true,
         projectName: true,
         clientName: true,
-        description: true
+        description: true,
+        manager: true
     })
 )
 
