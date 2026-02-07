@@ -28,6 +28,18 @@ export const userSchema = authSchema.pick({
 })
 
 export type User = z.infer<typeof userSchema>
+
+/** Notes */
+export const notesSchema = z.object({
+    _id: z.string(),
+    content: z.string(),
+    createBy: userSchema,
+    task : z.string()
+})
+
+export type Note = z.infer<typeof notesSchema>
+export type NoteFormData = Pick<Note, 'content'>
+
 /** Task */
 export const taskStatusSchema = z.enum (["pending", "onHold","inProgress", "underReview", "completed"])
 export type TaskStatus = z.infer<typeof taskStatusSchema>

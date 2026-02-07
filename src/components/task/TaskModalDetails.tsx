@@ -7,6 +7,7 @@ import { getTaskById, updateTaskStatus } from '@/api/TaskAPI';
 import type { TaskStatus } from '@/types/index';
 import { statusTraslation } from '@/locales/es';
 import { formatDate } from '@/utils/utils';
+import NotesPanel from '../notes/NotesPanel';
 
 
 export default function TaskModalDetails() {
@@ -95,17 +96,21 @@ export default function TaskModalDetails() {
                                         className="font-black text-4xl text-slate-600 my-5"
                                     >{data.name}</DialogTitle>
                                     <p className='text-lg text-slate-500 mb-2'>Descripción: {data.description}</p>
-                                    <p className='text-2xl text-slate-500 mb-2'>Historial de Cambios:</p>
-                                    <ul className='list-decimal'>
-                                        {data.completeBy.map((activityLog) => (
-                                            <li key={activityLog._id}>
-                                                <span className='font-bold tex bold text-slate-600'>
-                                                    {statusTraslation[activityLog.status]  } </span>
-                                                    {' '} por: {activityLog.user.name}
+                                    {data.completeBy.length ? (
+                                        <>
+                                            <p className='text-2xl text-slate-500 mb-2'>Historial de Cambios:</p>
+                                            <ul className='list-decimal'>
+                                                {data.completeBy.map((activityLog) => (
+                                                    <li key={activityLog._id}>
+                                                        <span className='font-bold tex bold text-slate-600'>
+                                                            {statusTraslation[activityLog.status]  } </span>
+                                                            {' '} por: {activityLog.user.name}
 
-                                            </li>
-                                        ))}
-                                    </ul>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </>
+                                    ) : null}
                                     
                                     <div className='my-5 space-y-3'>
                                         <label className='font-bold'>Estado Actual:</label>
@@ -120,6 +125,8 @@ export default function TaskModalDetails() {
                                             ))}
                                         </select>
                                     </div>
+
+                                    <NotesPanel />
                                 </DialogPanel>
                             </TransitionChild>
                         </div>
