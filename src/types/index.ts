@@ -1,4 +1,4 @@
-import { z } from 'zod'
+import { string, z } from 'zod'
 
 /** Auth & Users */
 const authSchema = z.object({
@@ -34,7 +34,8 @@ export const notesSchema = z.object({
     _id: z.string(),
     content: z.string(),
     createBy: userSchema,
-    task : z.string()
+    task : z.string(),
+    createdAt: z.string()
 })
 
 export type Note = z.infer<typeof notesSchema>
@@ -54,6 +55,9 @@ export const taskSchema = z.object({
         _id: z.string(),
         user: userSchema,
         status: taskStatusSchema
+    })),
+    notes: z.array(notesSchema.extend({
+        createBy: userSchema
     })),
     createdAt:z.string(),
     updatedAt:z.string()
