@@ -68,8 +68,16 @@ export const taskSchema = z.object({
 
 })
 
+export const taskPojectSchema = taskSchema.pick({
+    _id: true,
+    name: true,
+    description: true,
+    status: true
+})
+
 export type Task = z.infer<typeof taskSchema>
 export type TaskFormData = Pick<Task, 'name' | 'description'>
+export type TaskProject = z.infer<typeof taskPojectSchema>
 
 /** Projects */
 export const projectSchema = z.object({
@@ -77,8 +85,10 @@ export const projectSchema = z.object({
     projectName: z.string(),
     clientName: z.string(),
     description: z.string(),
-    manager: z.union([z.string(), userSchema.pick({ _id: true })
-])
+    manager: z.union([z.string(), userSchema.pick({ _id: true })]),
+    task: z.array(taskPojectSchema),
+    team: z.array(userSchema.pick({ _id: true }).shape._id)
+
 })
 
 export const dashBoardProjectSchema = z.array(
@@ -90,6 +100,15 @@ export const dashBoardProjectSchema = z.array(
         manager: true
     })
 )
+
+
+export const editProjectSchema = projectSchema.pick({
+    projectName: true,
+    clientName: true,
+    description: true
+})
+
+
 
 export type Project = z.infer<typeof projectSchema>
 export type ProjectFormData = Pick<Project, 'projectName' | 'clientName' | 'description'>
